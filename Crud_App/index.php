@@ -45,10 +45,6 @@
     </head>
 
     <body>
-        <!-- Button trigger modal -->
-        <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-            Edit
-        </button> -->
 
         <!-- Edit Modal -->
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
@@ -59,12 +55,22 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        ...
+                        <form action="/Projects/Crud_App/index.php" method="POST" class="my-4">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Note Title</label>
+                                <input type="text" class="form-control" id="titleEdit" name="titleEdit" aria-describedby="emailHelp">
+                            </div>
+                            <div class="mb-3">
+                                <label for="descript" class="form-label">Note Description</label>
+                                <textarea class="form-control" id="descriptEdit" name="descriptEdit" rows="3"></textarea>
+                            </div>
+                            <button type="submit" name="submit" class="btn btn-primary">Submit</button>
+                        </form>
                     </div>
-                    <div class="modal-footer">
+                    <!-- <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -81,8 +87,8 @@
                         ...
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">cancel</button>
+                        <button type="button" class="btn btn-primary btn-danger">yes</button>
                     </div>
                 </div>
             </div>
@@ -107,12 +113,13 @@
                     <strong>Successfull!</strong> you query has been added;
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>';
-        } else {
-            echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Failed!</strong> your previous query has not been added, Please try again
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>';
         }
+        // else {
+        //     echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+        //             <strong>Failed!</strong> your previous query has not been added, Please try again
+        //             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        //             </div>';
+        // }
         ?>
 
         <div class="container-sm w-75  my-5">
@@ -152,7 +159,7 @@
                         <th scope='row'>" . $sno . "</th>
                         <td>" . $row['title'] . "</td>
                         <td>" . $row['descript'] . "</td>
-                        <td> <button type='button' class='btn btn-danger' data-bs-toggle='modal' data-bs-target='#deleteModal'>Delete</button> <button type='button' class='btn btn-primary' data-bs-toggle='modal' data-bs-target='#exampleModal'>Edit</button> </td></tr>";
+                        <td> <button type='button' class='btn btn-danger' data-bs-toggle='modal' data-bs-target='#deleteModal'>Delete</button> <button type='button' class='edit btn btn-primary' data-bs-toggle='modal' data-bs-target='#exampleModal'>Edit</button> </td></tr>";
                     }
                     ?>
 
@@ -166,10 +173,22 @@
                 integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
                 crossorigin="anonymous"></script>
             <script src="//cdn.datatables.net/2.3.8/js/dataTables.min.js"></script>
+
             <script>
-                $(document).ready(function() {
-                    $('#myTable').DataTable();
-                });
+                let table = new DataTable('#myTable');
+
+                const edit = document.querySelectorAll('.edit')
+                edit.forEach((element)=>{
+                    element.addEventListener("click", function(event){
+                        const tr = event.target.parentNode.parentNode;
+                        title = tr.getElementsByTagName('td')[0].textContent;
+                        descript = tr.getElementsByTagName('td')[1].textContent;
+
+                        titleEdit.value = title
+                        descriptEdit.value = descript
+                    })
+                })
+                
             </script>
     </body>
 
