@@ -14,6 +14,8 @@ if (!$connect) {
 // Inserting data into database
 
 $inserted = false;
+$updated = false;
+$deleted = false;
 
 if (isset($_POST['submit'])) {
     // Handle UPDATE
@@ -26,11 +28,11 @@ if (isset($_POST['submit'])) {
         $updateData = mysqli_query($connect, $sql);
 
         if ($updateData) {
-            header("Location: index.php");
-            exit();
+            $updated = true;
+            // header("Location: index.php?mssg=updated");
+            // exit();
         }
-    } 
-    else {
+    } else {
         // fetching data from table
         $title = mysqli_real_escape_string($connect, $_POST['title']);
         $descript = mysqli_real_escape_string($connect, $_POST['descript']);
@@ -41,9 +43,23 @@ if (isset($_POST['submit'])) {
 
         if ($addData) {
             $inserted = true;
-            header("Location: index.php");
-            exit();
+            // header("Location: index.php?mssg=inserted");
+            // exit();
         }
+    }
+}
+
+// Handles delete
+
+if(isset($_POST['delete'])){
+    $sno = mysqli_real_escape_string($connect, $_POST['snoDelete']);
+    $sql = "DELETE FROM todo_data WHERE sno='$sno'";
+    $deleteData = mysqli_query($connect, $sql);
+
+    if($deleteData){
+        $deleted = true;
+        // header("location: index.php?mssg=deleted");
+        // exit();
     }
 }
 ?>
@@ -70,24 +86,24 @@ if (isset($_POST['submit'])) {
                     <h1 class="modal-title fs-5" id="editModalLabel">Edit Note</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form action="/Projects/Crud_App/index.php" method="POST" class="my-4">
+                <form action="/Projects/Crud_App/index.php" method="POST" class="my-4">
+                    <div class="modal-body">
+                        <input type="hidden" id="snoEdit" name="snoEdit">
                         <div class="mb-3">
                             <label for="title" class="form-label">Note Title</label>
-                            <input type="text" class="form-control" id="titleEdit" name="titleEdit" aria-describedby="emailHelp">
+                            <input type="text" class="form-control" id="titleEdit" name="titleEdit"
+                                aria-describedby="emailHelp">
                         </div>
                         <div class="mb-3">
                             <label for="descript" class="form-label">Note Description</label>
                             <textarea class="form-control" id="descriptEdit" name="descriptEdit" rows="3"></textarea>
                         </div>
-                        <input type="hidden" id="snoEdit" name="snoEdit">
-                        <button type="submit" name="submit" class="btn btn-primary">Update</button>
-                    </form>
-                </div>
-                <!-- <div class="modal-footer">
+                    </div>
+                    <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div> -->
+                        <button type="submit" name="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -100,13 +116,16 @@ if (isset($_POST['submit'])) {
                     <h1 class="modal-title fs-5" id="deleteModalLabel">Delete Note</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    ...
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">cancel</button>
-                    <button type="button" class="btn btn-primary btn-danger">yes</button>
-                </div>
+                <form action="/Projects/Crud_App/index.php" method="POST">
+                    <input type="hidden" id="snoDelete" name="snoDelete">
+                    <div class="modal-body">
+                        Are You sure you want to delete this note?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" name="delete" class="btn btn-primary btn-danger">Yes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -128,16 +147,24 @@ if (isset($_POST['submit'])) {
 
     if ($inserted) {
         echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Successfull!</strong> you query has been added;
+                    <strong>Successfull!</strong> you query has been added
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>';
     }
-    // else {
-    //     echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
-    //             <strong>Failed!</strong> your previous query has not been added, Please try again
-    //             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    //             </div>';
-    // }
+    if ($updated) {
+        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Successfull!</strong> you query has been updated
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>';
+    }
+
+    if ($deleted) {
+        echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Successfull!</strong> you query has been deleted
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>';
+    }
+
     ?>
 
     <div class="container-sm w-75  my-5">
@@ -177,7 +204,9 @@ if (isset($_POST['submit'])) {
                         <th scope='row'>" . $sno . "</th>
                         <td>" . $row['title'] . "</td>
                         <td>" . $row['descript'] . "</td>
-                        <td> <button type='button' class='btn btn-danger' data-bs-toggle='modal' data-bs-target='#deleteModal'>Delete</button> <button type='button' class='edit btn btn-primary' data-bs-toggle='modal' id= " . $row['sno'] . " data-bs-target='#exampleModal'>Edit</button> </td>
+                        <td> <button type='button' class='delete btn btn-danger'  data-bs-toggle='modal' data-sno='" . $row['sno'] . "' data-bs-target='#deleteModal'>Delete</button> 
+                        <button type='button' class='edit btn btn-primary' data-bs-toggle='modal' data-sno='" . $row['sno'] . "' data-bs-target='#exampleModal'>Edit</button> 
+                        </td>
                     </tr>";
                 }
                 ?>
@@ -187,7 +216,8 @@ if (isset($_POST['submit'])) {
     </div>
 
     <div>
-        <script src="https://code.jquery.com/jquery-4.0.0.js" integrity="sha256-9fsHeVnKBvqh3FB2HYu7g2xseAZ5MlN6Kz/qnkASV8U=" crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-4.0.0.js"
+            integrity="sha256-9fsHeVnKBvqh3FB2HYu7g2xseAZ5MlN6Kz/qnkASV8U=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
             crossorigin="anonymous"></script>
@@ -196,16 +226,27 @@ if (isset($_POST['submit'])) {
         <script>
             let table = new DataTable('#myTable')
 
-            const edit = document.querySelectorAll('.edit')
-            edit.forEach((element) => {
-                element.addEventListener("click", function(event) {
+            // Edit Note
+            const editNote = document.querySelectorAll('.edit')
+            editNote.forEach((element) => {
+                element.addEventListener("click", function (event) {
                     const tr = event.target.closest('tr')
                     const title = tr.getElementsByTagName('td')[0].textContent
                     const descript = tr.getElementsByTagName('td')[1].textContent
 
-                    snoEdit.value = event.target.id
+                    snoEdit.value = event.target.dataset.sno
                     titleEdit.value = title
                     descriptEdit.value = descript
+                })
+            })
+
+            // Delete Note
+
+            const deleteNote = document.querySelectorAll('.delete')
+            deleteNote.forEach(button => {
+                button.addEventListener("click", function () {
+                    const sno = this.dataset.sno
+                    document.getElementById('snoDelete').value = sno
                 })
             })
         </script>
